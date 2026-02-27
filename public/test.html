@@ -1,0 +1,10 @@
+<button onclick="probar()">Probar conexión DB</button>
+<pre id="resultado"></pre>
+
+<script>
+async function probar(){
+  const res = await fetch("http://localhost:3000/test-db");
+  const data = await res.json();
+  resultado.textContent = JSON.stringify(data, null, 2);
+}
+</script>
