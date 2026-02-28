@@ -1,39 +1,32 @@
-// verificar si existe sesión
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3000"
+    : window.location.origin;
+
 function checkAuth() {
-
   const token = localStorage.getItem("token");
-
-  if (!token) {
-    window.location = "/";
-    return;
-  }
+  if (!token) window.location = "/";
 }
 
-// cerrar sesión
 function logout() {
   localStorage.removeItem("token");
   window.location = "/";
 }
 
-// helper para requests protegidos
-async function api(url, options = {}) {
-
+async function api(endpoint, options = {}) {
   const token = localStorage.getItem("token");
 
   const config = {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      Authorization: token
+      Authorization: `Bearer ${token}`
     }
   };
 
-  const res = await fetch(url, config);
+  const res = await fetch(`${API_URL}${endpoint}`, config);
 
-  // token expirado
-  if (res.status === 401 || res.status === 403) {
-    logout();
-  }
+  if (res.status === 401 || res.status === 403) logout();
 
   return res;
 }
