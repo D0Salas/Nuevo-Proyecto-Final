@@ -4,36 +4,41 @@ const db = require("../db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-router.post("/login",(req,res)=>{
+router.post("/login", (req, res) => {
 
-  const {email,password} = req.body;
+  const { email, password } = req.body;
+
+  console.log("Login attempt:", email);
 
   db.query(
-    "SELECT * FROM admins WHERE email=?",
+    "SELECT * FROM admins WHERE email = ?",
     [email],
-    async (err,result)=>{
+    async (err, results) => {
 
-      if(err) return res.status(500).send(err);
+      if (err) {
+        console.error("MYSQL ERROR:", err);
+        return res.status(500).json({ error: err.message });
+      }
 
-      if(!result.length)
-        return res.status(401).json({message:"Usuario no encontrado"});
+      if (results.length === 0) {
+        return res.status(401).json({ error: "Usuario no encontrado" });
+      }
 
-      const admin = result[0];
+      const user = results[0];
 
-      const valid = await bcrypt.compare(password,admin.password);
+      const valid = await bcrypt.compare(password, user.password);
 
-      if(!valid)
-        return res.status(401).json({message:"Password incorrecto"});
+      if (!valid) {
+        return res.status(401).json({ error: "Password incorrecto" });
+      }
 
       const token = jwt.sign(
-        {id:admin.id,email:admin.email},
-        "SUPER_SECRET_KEY",
-        {expiresIn:"8h"}
+        { id: user.id },
+        process.env.JWT_SECRET || "secret",
+        { expiresIn: "1h" }
       );
 
-      res.json({token});
+      res.json({ token });
     }
   );
 });
-
-module.exports = router;
