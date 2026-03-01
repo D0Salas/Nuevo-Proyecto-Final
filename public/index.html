@@ -1,61 +1,66 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Login</title>
+  <style>
+    body{font-family:Arial, sans-serif; margin:40px;}
+    .card{max-width:420px; border:1px solid #ddd; padding:16px; border-radius:10px;}
+    input{width:100%; padding:10px; margin:8px 0;}
+    button{padding:10px 14px; cursor:pointer;}
+    #msg{color:#b00020; margin-top:10px;}
+  </style>
 </head>
-
 <body>
 
-<h2>Admin Login</h2>
+  <div class="card">
+    <h2>Admin Login</h2>
 
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+    <input id="email" type="text" placeholder="admin@empresa.com" />
+    <input id="password" type="password" placeholder="Password" />
+    <button id="btn">Ingresar</button>
 
-<button onclick="login()">Ingresar</button>
+    <p id="msg"></p>
+  </div>
 
-<p id="msg"></p>
+  <script>
+    const API_URL =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+        : window.location.origin;
 
-<script>
-const API_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:3000"
-    : window.location.origin;
+    const msg = document.getElementById("msg");
 
-async function login() {
+    document.getElementById("btn").addEventListener("click", login);
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+    async function login() {
+      msg.textContent = "";
 
-  try {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password })
-    });
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
 
-    const data = await res.json();
+        const data = await res.json().catch(() => ({}));
 
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-      window.location = "/dashboard.html";
-    } else {
-      document.getElementById("msg").innerText = "Credenciales incorrectas";
+        if (res.ok && data.token) {
+          localStorage.setItem("token", data.token);
+          window.location.href = "/dashboard.html";
+          return;
+        }
+
+        msg.textContent = data.message || "Credenciales incorrectas";
+      } catch (e) {
+        msg.textContent = "No se pudo conectar al servidor.";
+      }
     }
-
-  } catch (err) {
-    document.getElementById("msg").innerText = "No se pudo conectar al servidor";
-    console.error(err);
-  }
-}
-</script>
-
-</body>
-</html>
-</script>
+  </script>
 
 </body>
 </html>
