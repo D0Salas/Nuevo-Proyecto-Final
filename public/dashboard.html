@@ -1,33 +1,64 @@
-<h2>Gestión de Usuarios</h2>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestión de Usuarios</title>
+  <style>
+    body{font-family:Arial, sans-serif; margin:40px;}
+    .topbar{display:flex; gap:10px; align-items:center; justify-content:space-between;}
+    table{width:100%; border-collapse:collapse; margin-top:14px;}
+    th,td{border:1px solid #ddd; padding:10px; text-align:left;}
+    button{padding:8px 12px; cursor:pointer;}
+    #modal{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);}
+    #modal .box{background:#fff; max-width:520px; margin:10% auto; padding:16px; border-radius:10px;}
+    input,select{width:100%; padding:10px; margin:8px 0;}
+    .actions{display:flex; gap:8px;}
+  </style>
+</head>
+<body>
 
-<button onclick="abrirModal()">+ Nuevo Usuario</button>
+  <div class="topbar">
+    <h2>Gestión de Usuarios</h2>
+    <div class="actions">
+      <button onclick="abrirModal()">+ Nuevo Usuario</button>
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </div>
 
-<table border="1" width="100%">
-<thead>
-<tr>
-<th>Nombre</th>
-<th>Email</th>
-<th>Rol</th>
-<th>Acciones</th>
-</tr>
-</thead>
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tablaUsuarios"></tbody>
+  </table>
 
-<tbody id="tablaUsuarios"></tbody>
-</table>
+  <div id="modal">
+    <div class="box">
+      <h3 id="tituloModal">Usuario</h3>
 
-<div id="modal" style="display:none">
-  <h3 id="tituloModal">Usuario</h3>
+      <label>Nombre</label>
+      <input id="nombre" type="text" />
 
-  <input id="nombre" placeholder="Nombre">
-  <input id="email" placeholder="Email">
-  <input id="rol" placeholder="Rol">
+      <label>Email</label>
+      <input id="email" type="email" />
 
-  <button onclick="guardarUsuario()">Guardar</button>
-  <button onclick="cerrarModal()">Cancelar</button>
-</div>
+      <label>Rol</label>
+      <select id="rol">
+        <option value="user">user</option>
+        <option value="admin">admin</option>
+      </select>
 
-<button onclick="logout()">Cerrar sesión</button>
+      <div class="actions">
+        <button onclick="guardarUsuario()">Guardar</button>
+        <button onclick="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
 
-<!-- ✅ CORRECTO -->
-<script src="/js/auth.js"></script>
-<script src="/js/dashboard.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
