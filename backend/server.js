@@ -1,32 +1,28 @@
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const db = require("./db");
+const path = require("path");
 
 const app = express();
-
-const ORIGIN =
-  process.env.CORS_ORIGIN ||
-  (process.env.NODE_ENV === "production"
-    ? "https://nuevo-proyecto-final.onrender.com"
-    : "http://localhost:3000");
-
-app.use(cors({ origin: ORIGIN }));
-app.use(express.json());
+app.use(cors());
 app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.json());
 
 app.use("/auth", require("./routes/auth"));
 app.use("/users", require("./routes/users"));
 
+app.listen(3000, ()=> console.log("API running"));
+
 app.get("/test-db", (req, res) => {
-  db.query("SELECT NOW() AS time", (err, rows) => {
+  db.query("SELECT NOW() AS time", (err, result) => {
     if (err) {
-      console.error("TEST-DB ERROR:", err);
-      return res.status(500).json({ status: "error", message: err.message });
+      console.error(err);
+      return res.status(500).json({ status: "error" });
     }
-    res.json({ status: "success", database_time: rows[0].time });
+
+    res.json({
+      status: "success",
+      database_time: result[0].time
+    });
   });
 });
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`API running on port ${PORT}`));
