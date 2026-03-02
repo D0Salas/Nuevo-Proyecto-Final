@@ -1,37 +1,43 @@
-// verificar si existe sesión
-function checkAuth() {
+const API_URL = "http://localhost:3000";
+
+// ========================
+// VERIFICAR LOGIN
+// ========================
+function checkAuth(){
 
   const token = localStorage.getItem("token");
 
-  if (!token) {
-    window.location = "/";
-    return;
+  if(!token){
+    window.location="/";
   }
 }
 
-// cerrar sesión
-function logout() {
+// ========================
+// LOGOUT
+// ========================
+function logout(){
   localStorage.removeItem("token");
-  window.location = "/";
+  window.location="/";
 }
 
-// helper para requests protegidos
+// ========================
+// API HELPER
+// ========================
 async function api(url, options = {}) {
 
   const token = localStorage.getItem("token");
 
   const config = {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:`Bearer ${token}`
     }
   };
 
-  const res = await fetch(url, config);
+  const res = await fetch(API_URL + url, config);
 
-  // token expirado
-  if (res.status === 401 || res.status === 403) {
+  if(res.status === 401 || res.status === 403){
     logout();
   }
 
