@@ -8,11 +8,16 @@
 <p id="msg"></p>
 
 <script>
+
+const API_URL = "http://localhost:3000";
+
 async function login(){
 
-  const res = await fetch("http://localhost:3000/auth/login",{
+  const res = await fetch(`${API_URL}/auth/login`,{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{
+      "Content-Type":"application/json"
+    },
     body:JSON.stringify({
       email:email.value,
       password:password.value
@@ -26,8 +31,9 @@ async function login(){
     return;
   }
 
-  localStorage.token=data.token;
+  localStorage.setItem("token", data.token);
 
   window.location="dashboard.html";
 }
+
 </script>
