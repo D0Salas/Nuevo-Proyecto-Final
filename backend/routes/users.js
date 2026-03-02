@@ -1,34 +1,38 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-const auth = require("../middleware/auth");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-// GET
-router.get("/", auth,(req,res)=>{
-  db.query("SELECT * FROM usuarios",(e,r)=>res.json(r));
-});
+router.post("/login",(req,res)=>{
 
-// CREATE
-router.post("/", auth,(req,res)=>{
-  db.query("INSERT INTO usuarios SET ?",req.body,
-    ()=>res.sendStatus(200));
-});
+  const {email,password} = req.body;
 
-// UPDATE
-router.put("/:id", auth,(req,res)=>{
   db.query(
-    "UPDATE usuarios SET ? WHERE id=?",
-    [req.body,req.params.id],
-    ()=>res.sendStatus(200)
-  );
-});
+    "SELECT * FROM admins WHERE email=?",
+    [email],
+    async (err,result)=>{
 
-// DELETE
-router.delete("/:id", auth,(req,res)=>{
-  db.query(
-    "DELETE FROM usuarios WHERE id=?",
-    [req.params.id],
-    ()=>res.sendStatus(200)
+      if(err) return res.status(500).send(err);
+
+      if(!result.length)
+        return res.status(401).json({message:"Usuario no encontrado"});
+
+      const admin = result[0];
+
+      const valid = await bcrypt.compare(password,admin.password);
+
+      if(!valid)
+        return res.status(401).json({message:"Password incorrecto"});
+
+      const token = jwt.sign(
+        {id:admin.id,email:admin.email},
+        "SUPER_SECRET_KEY",
+        {expiresIn:"8h"}
+      );
+
+      res.json({token});
+    }
   );
 });
 
