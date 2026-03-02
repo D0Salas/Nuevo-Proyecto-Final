@@ -1,35 +1,38 @@
 const express = require("express");
-const router = express.Router();
 const db = require("../db");
-const auth = require("../middleware/auth");
 
-// GET
-router.get("/", auth,(req,res)=>{
-  db.query("SELECT * FROM usuarios",(e,r)=>res.json(r));
+const router = express.Router();
+
+router.get("/", async (req,res)=>{
+
+  try{
+    const result = await db.query("SELECT * FROM usuarios");
+    res.json(result.rows);
+  }
+  catch(err){
+    console.error(err);
+    res.status(500).json({message:"error"});
+  }
+
 });
 
-// CREATE
-router.post("/", auth,(req,res)=>{
-  db.query("INSERT INTO usuarios SET ?",req.body,
-    ()=>res.sendStatus(200));
-});
+router.post("/", async (req,res)=>{
 
-// UPDATE
-router.put("/:id", auth,(req,res)=>{
-  db.query(
-    "UPDATE usuarios SET ? WHERE id=?",
-    [req.body,req.params.id],
-    ()=>res.sendStatus(200)
-  );
-});
+  const { nombre,email,rol } = req.body;
 
-// DELETE
-router.delete("/:id", auth,(req,res)=>{
-  db.query(
-    "DELETE FROM usuarios WHERE id=?",
-    [req.params.id],
-    ()=>res.sendStatus(200)
-  );
+  try{
+    await db.query(
+      "INSERT INTO usuarios(nombre,email,rol) VALUES($1,$2,$3)",
+      [nombre,email,rol]
+    );
+
+    res.json({message:"created"});
+  }
+  catch(err){
+    console.error(err);
+    res.status(500).json({message:"error"});
+  }
+
 });
 
 module.exports = router;
