@@ -1,40 +1,39 @@
 const express = require("express");
+const router = express.Router();
+const db = require("../db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const db = require("../db");
 
-const router = express.Router();
+router.post("/login",(req,res)=>{
 
-function q(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.query(sql, params, (err, rows) => (err ? reject(err) : resolve(rows)));
-  });
-}
+  const {email,password} = req.body;
 
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body || {};
-    if (!email || !password) return res.status(400).json({ message: "Faltan credenciales" });
+  db.query(
+    "SELECT * FROM admins WHERE email=?",
+    [email],
+    async (err,result)=>{
 
-    const rows = await q("SELECT * FROM admins WHERE email = ? LIMIT 1", [email]);
-    if (!rows || rows.length === 0) return res.status(401).json({ message: "Credenciales incorrectas" });
+      if(err) return res.status(500).send(err);
 
-    const admin = rows[0];
-    const ok = await bcrypt.compare(password, admin.password);
-    if (!ok) return res.status(401).json({ message: "Credenciales incorrectas" });
+      if(!result.length)
+        return res.status(401).json({message:"Usuario no encontrado"});
 
-    const secret = process.env.JWT_SECRET || "SUPER_SECRET_KEY";
-    const token = jwt.sign(
-      { id: admin.id, email: admin.email, role: "admin" },
-      secret,
-      { expiresIn: "2h" }
-    );
+      const admin = result[0];
 
-    res.json({ token });
-  } catch (e) {
-    console.error("AUTH LOGIN ERROR:", e);
-    res.status(500).json({ message: "Error de servidor" });
-  }
+      const valid = await bcrypt.compare(password,admin.password);
+
+      if(!valid)
+        return res.status(401).json({message:"Password incorrecto"});
+
+      const token = jwt.sign(
+        {id:admin.id,email:admin.email},
+        "SUPER_SECRET_KEY",
+        {expiresIn:"8h"}
+      );
+
+      res.json({token});
+    }
+  );
 });
 
 module.exports = router;
