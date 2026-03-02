@@ -1,48 +1,45 @@
 const express = require("express");
-const router = express.Router();
-const db = require("../db");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const db = require("../db");
 
-router.post("/login", (req, res) => {
-  try {
-    const { email, password } = req.body || {};
+const router = express.Router();
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Faltan credenciales" });
-    }
+router.post("/login", async (req,res)=>{
 
-    db.query("SELECT * FROM admins WHERE email = ? LIMIT 1", [email], async (err, rows) => {
-      if (err) {
-        console.error("DB error /auth/login:", err);
-        return res.status(500).json({ message: "Error de servidor" });
-      }
+  const { email, password } = req.body;
 
-      if (!rows || rows.length === 0) {
-        return res.status(401).json({ message: "Credenciales incorrectas" });
-      }
+  try{
 
-      const admin = rows[0];
+    const result = await db.query(
+      "SELECT * FROM admins WHERE email=$1",
+      [email]
+    );
 
-      const ok = await bcrypt.compare(password, admin.password);
-      if (!ok) {
-        return res.status(401).json({ message: "Credenciales incorrectas" });
-      }
+    if(result.rows.length === 0)
+      return res.status(401).json({message:"invalid"});
 
-      const secret = process.env.JWT_SECRET || "SUPER_SECRET_KEY";
+    const user = result.rows[0];
 
-      const token = jwt.sign(
-        { id: admin.id, email: admin.email, role: "admin" },
-        secret,
-        { expiresIn: "2h" }
-      );
+    const valid = await bcrypt.compare(password, user.password);
 
-      return res.json({ token });
-    });
-  } catch (e) {
-    console.error("Error /auth/login:", e);
-    return res.status(500).json({ message: "Error de servidor" });
+    if(!valid)
+      return res.status(401).json({message:"invalid"});
+
+    const token = jwt.sign(
+      { id:user.id },
+      process.env.JWT_SECRET || "secret",
+      { expiresIn:"2h" }
+    );
+
+    res.json({token});
+
   }
+  catch(err){
+    console.error(err);
+    res.status(500).json({message:"server error"});
+  }
+
 });
 
 module.exports = router;
