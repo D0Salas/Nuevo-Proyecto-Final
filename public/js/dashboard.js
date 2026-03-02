@@ -1,22 +1,24 @@
+checkAuth();
+
 const modal = document.getElementById("modal");
 const tituloModal = document.getElementById("tituloModal");
 const nombre = document.getElementById("nombre");
 const email = document.getElementById("email");
 const rol = document.getElementById("rol");
 const tablaUsuarios = document.getElementById("tablaUsuarios");
-checkAuth();
 
 let editandoId = null;
+
 
 // =====================
 // CARGAR USUARIOS
 // =====================
-async function cargarUsuarios() {
+async function cargarUsuarios(){
 
   const res = await api("/users");
   const usuarios = await res.json();
 
-  tablaUsuarios.innerHTML = usuarios.map(u => `
+  tablaUsuarios.innerHTML = usuarios.map(u=>`
     <tr>
       <td>${u.nombre}</td>
       <td>${u.email}</td>
@@ -34,42 +36,47 @@ async function cargarUsuarios() {
   `).join("");
 }
 
+
 // =====================
 // MODAL
 // =====================
-function abrirModal() {
-  editandoId = null;
-  tituloModal.innerText = "Nuevo Usuario";
-  modal.style.display = "block";
+function abrirModal(){
+  editandoId=null;
+  tituloModal.innerText="Nuevo Usuario";
+  nombre.value="";
+  email.value="";
+  rol.value="";
+  modal.style.display="block";
 }
 
-function cerrarModal() {
-  modal.style.display = "none";
+function cerrarModal(){
+  modal.style.display="none";
 }
 
-// =====================
-// GUARDAR (CREATE / UPDATE)
-// =====================
-async function guardarUsuario() {
 
-  const data = {
-    nombre: nombre.value,
-    email: email.value,
-    rol: rol.value
+// =====================
+// GUARDAR
+// =====================
+async function guardarUsuario(){
+
+  const data={
+    nombre:nombre.value,
+    email:email.value,
+    rol:rol.value
   };
 
   if(editandoId){
 
     await api(`/users/${editandoId}`,{
       method:"PUT",
-      body: JSON.stringify(data)
+      body:JSON.stringify(data)
     });
 
-  } else {
+  }else{
 
     await api("/users",{
       method:"POST",
-      body: JSON.stringify(data)
+      body:JSON.stringify(data)
     });
   }
 
@@ -77,21 +84,23 @@ async function guardarUsuario() {
   cargarUsuarios();
 }
 
+
 // =====================
 // EDITAR
 // =====================
 function editar(id,n,e,r){
 
-  editandoId = id;
+  editandoId=id;
 
-  tituloModal.innerText = "Editar Usuario";
+  tituloModal.innerText="Editar Usuario";
 
-  nombre.value = n;
-  email.value = e;
-  rol.value = r;
+  nombre.value=n;
+  email.value=e;
+  rol.value=r;
 
-  modal.style.display = "block";
+  modal.style.display="block";
 }
+
 
 // =====================
 // ELIMINAR
